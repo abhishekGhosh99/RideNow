@@ -20,6 +20,14 @@ You can start editing the page by modifying `app/page.js`. The page auto-updates
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Notes
+
+I used Vercel v0 to generate multiple UI sections for the landing page.
+The Hero, Features, Popular Cars, and Pricing sections were all created using v0’s design generator.
+I customized the components inside Next.js using Tailwind to improve responsiveness, spacing, and colors.
+The pages follow a clean project structure with reusable components.
+The final project is deployed on Vercel and fully responsive across devices.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
