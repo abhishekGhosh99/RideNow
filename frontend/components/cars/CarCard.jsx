@@ -8,13 +8,13 @@ export default function CarCard({ car }) {
 
   const handlePrevImage = () => {
     setCurrentImageIndex((prev) =>
-      prev === 0 ? car.images.length - 1 : prev - 1
+      prev === 0 ? car.images.length - 1 : prev - 1,
     );
   };
 
   const handleNextImage = () => {
     setCurrentImageIndex((prev) =>
-      prev === car.images.length - 1 ? 0 : prev + 1
+      prev === car.images.length - 1 ? 0 : prev + 1,
     );
   };
 
