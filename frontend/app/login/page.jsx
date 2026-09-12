@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
-const Login = () => {
+const LoginForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
@@ -223,5 +223,15 @@ const Login = () => {
     </main>
   );
 };
+
+const Login = () => (
+  <Suspense
+    fallback={
+      <main className="min-h-screen bg-[#09090B] pt-[76px] text-[#F4F4F5]" />
+    }
+  >
+    <LoginForm />
+  </Suspense>
+);
 
 export default Login;

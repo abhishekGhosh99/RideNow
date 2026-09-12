@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
-const Signup = () => {
+const SignupForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -294,5 +294,15 @@ const Signup = () => {
     </main>
   );
 };
+
+const Signup = () => (
+  <Suspense
+    fallback={
+      <main className="min-h-screen bg-[#09090B] pt-[76px] text-[#F4F4F5]" />
+    }
+  >
+    <SignupForm />
+  </Suspense>
+);
 
 export default Signup;
