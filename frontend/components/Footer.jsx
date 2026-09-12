@@ -1,4 +1,6 @@
 "use client";
+
+import Link from "next/link";
 import {
   Mail,
   MapPin,
@@ -7,153 +9,245 @@ import {
   Twitter,
   Instagram,
   Linkedin,
+  ArrowUpRight,
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const footerLinks = {
     Company: [
-      { label: "Home", href: "#" },
-      { label: "Cars", href: "#cars" },
+      { label: "Home", href: "/" },
+      { label: "Our Cars", href: "/cars" },
       { label: "Pricing", href: "#pricing" },
-      { label: "Contact", href: "#contact" },
+      { label: "About Us", href: "#about" },
     ],
     Support: [
-      { label: "FAQ", href: "#" },
-      { label: "Blog", href: "#" },
-      { label: "Insurance", href: "#" },
-      { label: "Terms", href: "#" },
+      { label: "Contact", href: "#contact" },
+      { label: "FAQs", href: "#faq" },
+      { label: "Insurance", href: "#insurance" },
+      { label: "Help Center", href: "#help" },
     ],
     Legal: [
-      { label: "Privacy Policy", href: "#" },
-      { label: "Terms of Service", href: "#" },
-      { label: "Cookie Policy", href: "#" },
-      { label: "Disclaimer", href: "#" },
+      { label: "Privacy Policy", href: "#privacy" },
+      { label: "Terms of Service", href: "#terms" },
+      { label: "Cancellation Policy", href: "#cancellation" },
+      { label: "Disclaimer", href: "#disclaimer" },
     ],
   };
 
   const socialIcons = [
-    { icon: Facebook, label: "Facebook", href: "#" },
-    { icon: Twitter, label: "Twitter", href: "#" },
-    { icon: Instagram, label: "Instagram", href: "#" },
-    { icon: Linkedin, label: "LinkedIn", href: "#" },
+    {
+      icon: Instagram,
+      label: "Instagram",
+      href: "#",
+    },
+    {
+      icon: Facebook,
+      label: "Facebook",
+      href: "#",
+    },
+    {
+      icon: Twitter,
+      label: "Twitter",
+      href: "#",
+    },
+    {
+      icon: Linkedin,
+      label: "LinkedIn",
+      href: "#",
+    },
   ];
 
   return (
-    <footer className="bg-slate-950/80 border-t border-cyan-500/20 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        {/* Top Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-          {/* Logo and Description */}
-          <div className="lg:col-span-1">
-            <div className="flex items-center gap-2 mb-4 group">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg blur-sm opacity-60 group-hover:opacity-100 transition-opacity"></div>
-                <div className="relative px-3 py-1.5 bg-slate-950 rounded-lg">
-                  <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-                    RideNow
-                  </span>
-                </div>
-              </div>
-            </div>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              Premium car rental service offering affordable prices and seamless
-              booking experience.
+    <footer className="border-t border-white/[0.06] bg-[#09090B]">
+      <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
+        {/* Main Footer */}
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
+          {/* Brand */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="lg:col-span-4"
+          >
+            <Link href="/" className="inline-flex items-center">
+              <span className="text-xl font-semibold tracking-[-0.03em] text-white">
+                RideNow
+              </span>
+            </Link>
+
+            <p className="mt-5 max-w-sm text-sm leading-6 text-zinc-500">
+              Premium cars, simple booking, and a better way to get on the road.
+              Find your next ride with RideNow.
             </p>
-            {/* Social Icons */}
-            <div className="flex gap-4 mt-6">
+
+            {/* Social */}
+            <div className="mt-7 flex items-center gap-2.5">
               {socialIcons.map((social) => {
                 const Icon = social.icon;
+
                 return (
                   <a
                     key={social.label}
                     href={social.href}
                     aria-label={social.label}
-                    className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-900/50 text-slate-400 hover:bg-gradient-to-r hover:from-cyan-500 hover:to-purple-500 hover:text-white transition-all duration-300 border border-cyan-500/10 hover:border-cyan-500/30"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-[#111113] text-zinc-500 transition-all duration-200 hover:border-[#D4AF5A]/40 hover:bg-[#18181B] hover:text-[#D4AF5A]"
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className="h-4 w-4" />
                   </a>
                 );
               })}
             </div>
-          </div>
+          </motion.div>
 
-          {/* Links Sections */}
-          {Object.entries(footerLinks).map(([title, links]) => (
-            <div key={title}>
-              <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">
-                {title}
-              </h3>
-              <ul className="space-y-3">
-                {links.map((link) => (
-                  <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="text-slate-400 hover:text-cyan-400 transition-colors duration-300 text-sm"
-                    >
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        {/* Contact Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 pb-12 border-b border-cyan-500/10">
-          <div className="flex items-start gap-3">
-            <Phone className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-1" />
-            <div>
-              <p className="text-slate-400 text-sm">Phone</p>
-              <a
-                href="tel:+1234567890"
-                className="text-white hover:text-cyan-400 transition-colors"
+          {/* Links */}
+          <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 lg:col-span-5">
+            {Object.entries(footerLinks).map(([title, links], index) => (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.08 * (index + 1),
+                }}
               >
-                +1 (234) 567-890
-              </a>
-            </div>
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-300">
+                  {title}
+                </h3>
+
+                <ul className="mt-5 space-y-3.5">
+                  {links.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
+                        className="text-sm text-zinc-500 transition-colors duration-200 hover:text-white"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
           </div>
-          <div className="flex items-start gap-3">
-            <Mail className="w-5 h-5 text-purple-400 flex-shrink-0 mt-1" />
-            <div>
-              <p className="text-slate-400 text-sm">Email</p>
+
+          {/* Contact */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{
+              duration: 0.5,
+              delay: 0.25,
+            }}
+            className="lg:col-span-3"
+          >
+            <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-300">
+              Get in touch
+            </h3>
+
+            <div className="mt-5 space-y-5">
+              {/* Phone */}
+              <a
+                href="tel:+911234567890"
+                className="group flex items-start gap-3"
+              >
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-[#111113]">
+                  <Phone className="h-3.5 w-3.5 text-[#D4AF5A]" />
+                </div>
+
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.1em] text-zinc-600">
+                    Phone
+                  </p>
+
+                  <p className="mt-1 text-sm text-zinc-400 transition-colors group-hover:text-white">
+                    +91 12345 67890
+                  </p>
+                </div>
+              </a>
+
+              {/* Email */}
               <a
                 href="mailto:support@ridenow.com"
-                className="text-white hover:text-purple-400 transition-colors"
+                className="group flex items-start gap-3"
               >
-                support@ridenow.com
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-[#111113]">
+                  <Mail className="h-3.5 w-3.5 text-[#D4AF5A]" />
+                </div>
+
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.1em] text-zinc-600">
+                    Email
+                  </p>
+
+                  <p className="mt-1 text-sm text-zinc-400 transition-colors group-hover:text-white">
+                    support@ridenow.com
+                  </p>
+                </div>
               </a>
+
+              {/* Location */}
+              <div className="flex items-start gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-[#111113]">
+                  <MapPin className="h-3.5 w-3.5 text-[#D4AF5A]" />
+                </div>
+
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.1em] text-zinc-600">
+                    Location
+                  </p>
+
+                  <p className="mt-1 text-sm text-zinc-400">Delhi, India</p>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <MapPin className="w-5 h-5 text-orange-400 flex-shrink-0 mt-1" />
-            <div>
-              <p className="text-slate-400 text-sm">Address</p>
-              <p className="text-white">123 Car Street, Motor City</p>
-            </div>
-          </div>
+          </motion.div>
         </div>
 
-        {/* Bottom Section */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-slate-500 text-sm text-center sm:text-left">
+        {/* Divider */}
+        <div className="my-10 h-px bg-white/[0.06]" />
+
+        {/* Bottom */}
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-zinc-600">
             © {currentYear} RideNow. All rights reserved.
           </p>
-          <div className="flex gap-6">
-            <a
-              href="#"
-              className="text-slate-400 hover:text-cyan-400 text-sm transition-colors"
+
+          <div className="flex flex-wrap items-center gap-5">
+            <Link
+              href="#privacy"
+              className="text-xs text-zinc-600 transition-colors hover:text-zinc-300"
+            >
+              Privacy
+            </Link>
+
+            <Link
+              href="#terms"
+              className="text-xs text-zinc-600 transition-colors hover:text-zinc-300"
+            >
+              Terms
+            </Link>
+
+            <Link
+              href="#accessibility"
+              className="text-xs text-zinc-600 transition-colors hover:text-zinc-300"
             >
               Accessibility
-            </a>
-            <a
-              href="#"
-              className="text-slate-400 hover:text-cyan-400 text-sm transition-colors"
+            </Link>
+
+            <Link
+              href="/cars"
+              className="group flex items-center gap-1 text-xs font-medium text-zinc-400 transition-colors hover:text-[#D4AF5A]"
             >
-              Sitemap
-            </a>
+              Browse cars
+              <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </Link>
           </div>
         </div>
       </div>

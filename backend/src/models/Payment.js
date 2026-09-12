@@ -1,5 +1,10 @@
 const mongoose = require("mongoose");
 
+
+// const paymentRoutes = require("./payments");
+
+// router.use("/payments", paymentRoutes);
+
 const paymentSchema = new mongoose.Schema(
   {
     booking: {
@@ -18,7 +23,7 @@ const paymentSchema = new mongoose.Schema(
     },
     currency: {
       type: String,
-      default: "USD",
+      default: "inr",
     },
     paymentMethod: {
       type: String,

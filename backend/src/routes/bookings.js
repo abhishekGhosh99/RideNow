@@ -1,6 +1,5 @@
 const express = require("express");
-const router = express.Router();
-const { protect, authorize } = require("../middleware/auth");
+
 const {
   createBooking,
   getMyBookings,
@@ -10,16 +9,31 @@ const {
   getAllBookings,
 } = require("../controllers/bookingController");
 
-// Protected routes
-router.use(protect);
+const { protect, authorize } = require("../middleware/auth");
 
-router.post("/", createBooking);
-router.get("/my-bookings", getMyBookings);
-router.get("/:id", getBooking);
-router.put("/:id", updateBooking);
-router.post("/:id/cancel", cancelBooking);
+const router = express.Router();
+
+// Customer routes
+router.post("/", protect, createBooking);
+
+router.get("/my", protect, getMyBookings);
+
+router.get("/:id", protect, getBooking);
+
+router.put("/:id", protect, updateBooking);
+
+router.patch(
+  "/:id/cancel",
+  protect,
+  cancelBooking
+);
 
 // Admin routes
-router.get("/", authorize("admin"), getAllBookings);
+router.get(
+  "/",
+  protect,
+  authorize("admin"),
+  getAllBookings
+);
 
 module.exports = router;

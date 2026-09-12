@@ -113,50 +113,123 @@ exports.getCar = async (req, res) => {
 // @desc    Check car availability
 // @route   POST /api/cars/:id/check-availability
 // @access  Public
-exports.checkAvailability = async (req, res) => {
-  try {
-    const { startDate, endDate } = req.body;
-    const carId = req.params.id;
+// exports.checkAvailability = async (req, res) => {
+//   try {
+//     const { startDate, endDate } = req.body;
+//     const carId = req.params.id;
 
-    // Check if car exists
-    const car = await Car.findById(carId);
-    if (!car) {
-      return res.status(404).json({
+//     // Check if car exists
+//     const car = await Car.findById(carId);
+//     if (!car) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Car not found",
+//       });
+//     }
+
+//     // Check for overlapping bookings
+//     const overlappingBookings = await Booking.find({
+//       car: carId,
+//       status: { $in: ["confirmed", "ongoing"] },
+//       $or: [
+//         {
+//           startDate: { $lte: new Date(endDate) },
+//           endDate: { $gte: new Date(startDate) },
+//         },
+//       ],
+//     });
+
+//     const isAvailable = overlappingBookings.length === 0;
+
+//     res.status(200).json({
+//       success: true,
+//       data: {
+//         isAvailable,
+//         car: car.name,
+//         requestedPeriod: {
+//           startDate,
+//           endDate,
+//         },
+//         conflictingBookings: overlappingBookings.length,
+//       },
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Error checking availability",
+//       error: error.message,
+//     });
+//   }
+// };
+
+// @desc    Search available cars by destination and dates
+// @route   GET /api/cars/search
+// @access  Public
+exports.searchAvailableCars = async (req, res) => {
+  try {
+    const { destination, startDate, endDate } = req.query;
+
+    if (!destination || !startDate || !endDate) {
+      return res.status(400).json({
         success: false,
-        message: "Car not found",
+        message: "Destination, start date, and end date are required",
       });
     }
 
-    // Check for overlapping bookings
-    const overlappingBookings = await Booking.find({
-      car: carId,
-      status: { $in: ["confirmed", "ongoing"] },
-      $or: [
-        {
-          startDate: { $lte: new Date(endDate) },
-          endDate: { $gte: new Date(startDate) },
-        },
-      ],
-    });
+    const start = new Date(startDate);
+    const end = new Date(endDate);
 
-    const isAvailable = overlappingBookings.length === 0;
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date format",
+      });
+    }
+
+    if (start >= end) {
+      return res.status(400).json({
+        success: false,
+        message: "End date must be after start date",
+      });
+    }
+
+    // Find cars that are already booked during the requested period
+    const conflictingBookings = await Booking.find({
+      status: { $in: ["confirmed", "ongoing"] },
+      startDate: { $lte: end },
+      endDate: { $gte: start },
+    }).select("car");
+
+    const bookedCarIds = conflictingBookings.map((booking) => booking.car);
+
+    // Find cars in the requested destination that are not booked
+    const cars = await Car.find({
+      isAvailable: true,
+
+      "location.city": {
+        $regex: `^${destination.trim()}$`,
+        $options: "i",
+      },
+
+      _id: {
+        $nin: bookedCarIds,
+      },
+    }).sort({ isFeatured: -1, averageRating: -1 });
 
     res.status(200).json({
       success: true,
-      data: {
-        isAvailable,
-        car: car.name,
-        requestedPeriod: {
-          startDate,
-          endDate,
-        },
-        conflictingBookings: overlappingBookings.length,
+      count: cars.length,
+      data: cars,
+      search: {
+        destination,
+        startDate,
+        endDate,
       },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error checking availability",
+      message: "Error searching available cars",
       error: error.message,
     });
   }

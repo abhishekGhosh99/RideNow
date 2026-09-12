@@ -68,15 +68,62 @@ const bookingSchema = new mongoose.Schema(
     ],
     // Driver info
     driverInfo: {
-      licenseNumber: String,
-      isMainDriver: Boolean,
+      name: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
+      email: {
+        type: String,
+        required: true,
+        trim: true,
+        lowercase: true,
+      },
+
+      phone: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
+      licenseNumber: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
+      isMainDriver: {
+        type: Boolean,
+        default: true,
+      },
+
       additionalDrivers: [
         {
-          name: String,
-          licenseNumber: String,
+          name: {
+            type: String,
+            trim: true,
+          },
+
+          email: {
+            type: String,
+            trim: true,
+            lowercase: true,
+          },
+
+          phone: {
+            type: String,
+            trim: true,
+          },
+
+          licenseNumber: {
+            type: String,
+            trim: true,
+          },
         },
       ],
     },
+
     // Status tracking
     status: {
       type: String,
@@ -108,15 +155,16 @@ const bookingSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Generate unique booking number
-bookingSchema.pre("save", async function (next) {
+bookingSchema.pre("save", function () {
   if (!this.bookingNumber) {
-    this.bookingNumber = "RN" + Date.now() + Math.floor(Math.random() * 1000);
+    this.bookingNumber = `RN${Date.now()}${Math.floor(
+      1000 + Math.random() * 9000,
+    )}`;
   }
-  next();
 });
 
 module.exports = mongoose.model("Booking", bookingSchema);

@@ -1,25 +1,33 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+
+import { ArrowRight, ShieldCheck } from "lucide-react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
+import { useRef } from "react";
+import { useRouter } from "next/navigation";
 
 const containerVariants = {
-  hidden: { opacity: 0 },
+  hidden: {},
   visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.15 },
+    transition: {
+      staggerChildren: 0.1,
+    },
   },
 };
 
-const itemsVariants = {
-  hidden: { opacity: 0, y: 20 },
+const itemVariants = {
+  hidden: {
+    opacity: 0,
+    y: 24,
+  },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6 },
+    transition: {
+      duration: 0.65,
+      ease: [0.22, 1, 0.36, 1],
+    },
   },
 };
 
@@ -27,175 +35,165 @@ const Hero = () => {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
 
+  const heroRef = useRef(null);
+
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+
+  // Subtle parallax movement
+  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "12%"]);
+  const contentY = useTransform(scrollYProgress, [0, 1], ["0px", "-70px"]);
+  const carScale = useTransform(scrollYProgress, [0, 1], [1, 1.06]);
+
   const handleBookNow = () => {
-    if (!isAuthenticated) {
-      router.push("/login");
-    } else {
-      router.push("/booking");
-    }
+    router.push(isAuthenticated ? "/booking" : "/login");
   };
 
   return (
-    <motion.section
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.8 }}
-      className="scroll-mt-24 relative min-h-screen flex items-center justify-center overflow-hidden py-20 px-4 sm:px-6 lg:px-20"
+    <section
+      ref={heroRef}
       id="home"
+      className="relative min-h-screen w-full overflow-hidden bg-[#09090B] pt-[32px]"
     >
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-purple-950/40 to-slate-900"></div>
-
-        <div className="absolute top-20 right-10 w-80 h-80 bg-cyan-500/15 rounded-full blur-3xl animate-pulse"></div>
+      {/* Background image */}
+      <motion.div
+        style={{
+          y: backgroundY,
+          scale: carScale,
+        }}
+        className="absolute inset-0 -top-[6%] h-[112%] w-full"
+      >
         <div
-          className="absolute -bottom-20 -left-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"
-          style={{ animationDelay: "1s" }}
-        ></div>
-        <div
-          className="absolute top-1/2 left-1/3 w-72 h-72 bg-orange-400/8 rounded-full blur-3xl animate-pulse"
-          style={{ animationDelay: "2s" }}
-        ></div>
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: "url('/images/hero-img.png')",
+          }}
+        />
 
-        {/* Subtle grid pattern overlay */}
-        <div className="absolute inset-0 opacity-5 bg-[linear-gradient(to_right,#80caff_1px,transparent_1px),linear-gradient(to_bottom,#80caff_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-black/20" />
+      </motion.div>
 
-        <div className="absolute inset-0 bg-radial-gradient opacity-40 pointer-events-none"></div>
-      </div>
-
-      <div className="w-full max-w-7xl mx-auto relative z-10">
-        {/* Two-column grid layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
-          {/* Left Column - Content */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="flex flex-col justify-center space-y-6 sm:space-y-8 order-last lg:order-first"
+      {/* Hero content */}
+      <motion.div
+        style={{ y: contentY }}
+        className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1440px] items-center px-8 py-20 pt-24 sm:px-10 lg:px-14 xl:px-16"
+      >
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="max-w-[680px]"
+        >
+          {/* Eyebrow */}
+          <motion.p
+            variants={itemVariants}
+            className="mb-7 text-sm font-medium uppercase tracking-[0.24em] text-[#D4AF5A]"
           >
-            <motion.div
-              variants={itemsVariants}
-              className="inline-flex items-center gap-3 w-fit"
-            >
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-orange-400 rounded-full blur-md opacity-60"></div>
-                <div className="relative w-3 h-3 rounded-full bg-gradient-to-r from-cyan-400 to-orange-400"></div>
-              </div>
-              <span className="text-sm font-medium bg-gradient-to-r from-cyan-400 to-orange-400 bg-clip-text text-transparent tracking-widest uppercase font-semibold">
-                Future of Mobility
-              </span>
-            </motion.div>
+            Premium car rental
+          </motion.p>
 
-            <motion.h1
-              variants={itemsVariants}
-              className="text-4xl sm:text-5xl lg:text-7xl font-bold leading-tight text-balance"
-            >
-              <span className="bg-gradient-to-r from-white via-cyan-300 to-purple-300 bg-clip-text text-transparent drop-shadow-lg">
-                Rent Your Dream Car in Minutes
-              </span>
-            </motion.h1>
+          {/* Heading */}
+          <motion.h1
+            variants={itemVariants}
+            className="max-w-[700px] text-5xl font-semibold leading-[0.98] tracking-[-0.045em] text-white sm:text-6xl lg:text-[76px] xl:text-[82px]"
+          >
+            The right car
+            <br />
+            for every journey.
+          </motion.h1>
 
-            <motion.p
-              variants={itemsVariants}
-              className="text-base sm:text-lg text-slate-200 leading-relaxed max-w-xl text-balance font-medium"
-            >
-              Affordable prices, easy booking, and premium cars at your
-              fingertips. Experience the future of car rental today.
-            </motion.p>
+          {/* Description */}
+          <motion.p
+            variants={itemVariants}
+            className="mt-7 max-w-[590px] text-base leading-7 text-zinc-300 sm:text-lg sm:leading-8"
+          >
+            From everyday city drives to weekend escapes, find and book your
+            next car with RideNow.
+          </motion.p>
 
-            <motion.div
-              variants={itemsVariants}
-              className="flex flex-col sm:flex-row gap-4 pt-6"
+          {/* Buttons */}
+          <motion.div
+            variants={itemVariants}
+            className="mt-9 flex flex-col gap-3 sm:flex-row"
+          >
+            <motion.button
+              type="button"
+              onClick={handleBookNow}
+              whileHover={{
+                y: -2,
+              }}
+              whileTap={{
+                scale: 0.98,
+              }}
+              className="group inline-flex h-14 items-center justify-center gap-3 rounded-xl bg-[#D4AF5A] px-7 text-sm font-semibold text-[#09090B] transition-colors duration-200 hover:bg-[#E0BE70]"
             >
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              Browse cars
+              <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+            </motion.button>
+
+            <Link href="/cars">
+              <motion.span
+                whileHover={{
+                  y: -2,
+                }}
+                whileTap={{
+                  scale: 0.98,
+                }}
+                className="inline-flex h-14 items-center justify-center rounded-xl border border-zinc-600 bg-black/20 px-7 text-sm font-semibold text-white backdrop-blur-sm transition-colors duration-200 hover:border-zinc-400 hover:bg-white/10"
               >
-                <Button
-                  size="lg"
-                  className="relative bg-gradient-to-r from-cyan-500 to-purple-500 hover:shadow-lg hover:shadow-cyan-500/40 text-white font-semibold rounded-xl h-14 px-8 transition-all duration-300 group overflow-hidden"
-                  onClick={handleBookNow}
-                >
-                  Book Now
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </motion.div>
-
-              <Link href="/cars">
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-2 border-cyan-500/40 text-white hover:bg-cyan-500/10 hover:border-cyan-400/70 font-semibold rounded-xl h-14 px-8 transition-all duration-300 backdrop-blur-sm bg-white/5 hover:text-white"
-                  >
-                    View Cars
-                  </Button>
-                </motion.div>
-              </Link>
-            </motion.div>
-
-            <motion.div
-              variants={containerVariants}
-              className="flex flex-wrap gap-8 sm:gap-12 pt-8 border-t border-slate-700/50"
-            >
-              <div className="flex flex-col">
-                <span className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                  50K+
-                </span>
-                <span className="text-sm text-slate-300 font-medium">
-                  Happy Customers
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  500+
-                </span>
-                <span className="text-sm text-slate-300 font-medium">
-                  Premium Vehicles
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
-                  24/7
-                </span>
-                <span className="text-sm text-slate-300 font-medium">
-                  Support Available
-                </span>
-              </div>
-            </motion.div>
+                View available cars
+              </motion.span>
+            </Link>
           </motion.div>
 
-          {/* Right Column */}
+          {/* Trust stats */}
           <motion.div
-            initial={{ opacity: 0, x: 60, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ duration: 0.9, ease: "easeOut" }}
-            className="flex items-center justify-center h-full order-first lg:order-last"
+            variants={itemVariants}
+            className="mt-12 flex max-w-[660px] flex-wrap items-center gap-x-7 gap-y-5 border-t border-white/15 pt-7"
           >
-            <div className="relative w-full max-w-full mx-auto">
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 via-purple-500/10 to-orange-400/15 rounded-3xl blur-2xl"></div>
+            {/* Vehicles */}
+            <div>
+              <p className="text-2xl font-semibold tracking-tight text-white">
+                500+
+              </p>
 
-              <div className="relative w-full h-auto">
-                <img
-                  src="/hero-img.png"
-                  alt="Premium luxury car for rental"
-                  className="w-full h-auto object-contain scale-125 md:scale-150"
-                />
+              <p className="mt-1 text-sm text-zinc-400">Vehicles available</p>
+            </div>
+
+            <div className="h-10 w-px bg-white/15" />
+
+            {/* Support */}
+            <div>
+              <p className="text-2xl font-semibold tracking-tight text-white">
+                24/7
+              </p>
+
+              <p className="mt-1 text-sm text-zinc-400">Customer support</p>
+            </div>
+
+            <div className="h-10 w-px bg-white/15" />
+
+            {/* Security */}
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="h-5 w-5 text-[#D4AF5A]" />
+
+              <div>
+                <p className="text-sm font-semibold text-white">
+                  Secure booking
+                </p>
+
+                <p className="mt-1 text-sm text-zinc-400">
+                  Simple & transparent
+                </p>
               </div>
-
-              <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-gradient-to-br from-orange-400/30 to-cyan-500/30 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
-
-              <div
-                className="absolute -top-10 -left-10 w-48 h-48 bg-gradient-to-br from-purple-500/30 to-cyan-500/30 rounded-full blur-3xl pointer-events-none animate-pulse"
-                style={{ animationDelay: "1s" }}
-              ></div>
             </div>
           </motion.div>
-        </div>
-      </div>
-    </motion.section>
+        </motion.div>
+      </motion.div>
+    </section>
   );
 };
 

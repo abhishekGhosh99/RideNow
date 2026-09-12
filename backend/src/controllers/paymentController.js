@@ -1,7 +1,9 @@
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? require("stripe")(process.env.STRIPE_SECRET_KEY)
+  : null;
 const Payment = require("../models/Payment");
 const Booking = require("../models/Booking");
-const { sendPaymentReceipt } = require("../utils/emailService");
+// const { sendPaymentReceipt } = require("../utils/emailService");
 
 // @desc    Create payment intent
 // @route   POST /api/payments/create-intent
@@ -41,7 +43,7 @@ exports.createPaymentIntent = async (req, res) => {
     // Create Stripe payment intent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(booking.pricing.totalAmount * 100), // Convert to cents
-      currency: "usd",
+      currency: "inr",
       metadata: {
         bookingId: booking._id.toString(),
         userId: req.user.id,
@@ -119,7 +121,7 @@ exports.confirmPayment = async (req, res) => {
     ).populate(["car", "user"]);
 
     // Send confirmation email
-    await sendPaymentReceipt(booking, payment);
+    // await sendPaymentReceipt(booking, payment);
 
     res.status(200).json({
       success: true,

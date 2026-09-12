@@ -154,3 +154,6 @@ exports.getMe = async (req, res, next) => {
 };
 
 // Additional auth methods: forgotPassword, resetPassword, updatePassword, etc.
+
+
+//token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhOTg1N2ZhYmQ5ZDE5YWFkZjBkN2RkZSIsImlhdCI6MTc4ODM2ODg5MSwiZXhwIjoxNzkwOTYwODkxfQ.ySm59dABHK30pxMnKM3XW7lDiRAAKIPBMC5aNtNOVc4"

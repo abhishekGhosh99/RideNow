@@ -1,124 +1,297 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import {
+  ArrowRight,
+  Eye,
+  EyeOff,
+  Loader2,
+  LockKeyhole,
+  Mail,
+  User,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 const Signup = () => {
   const router = useRouter();
-  const { login } = useAuth();
+  const searchParams = useSearchParams();
+
+  const { register } = useAuth();
+
+  const redirectTo = searchParams.get("redirect") || "/";
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (loading) return;
+
     setError("");
     setLoading(true);
 
     try {
-      // Register user
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ firstName, lastName, email, password }),
-        }
+      /*
+       * register() already receives the JWT from
+       * the backend and stores the authenticated user.
+       *
+       * We do NOT need to call login() again.
+       */
+      await register({
+        firstName,
+        lastName,
+        email,
+        password,
+      });
+
+      router.replace(redirectTo);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Unable to create your account.",
       );
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Signup failed");
-      }
-
-      // Auto-login after signup
-      await login(email, password);
-
-      router.push("/booking");
-    } catch (err) {
-      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <section className="min-h-screen flex flex-col items-center py-20 bg-gradient-to-br from-slate-950 via-purple-950/40 to-slate-900">
-      {/* Heading */}
-      <h1 className="text-white text-4xl font-bold mb-12 text-center">
-        Welcome to RideNow
-      </h1>
+    <main className="min-h-screen bg-[#09090B] pt-[76px] text-[#F4F4F5]">
+      <div className="mx-auto flex min-h-[calc(100vh-76px)] w-full max-w-6xl items-center px-6 py-16 sm:px-8">
+        <div className="grid w-full overflow-hidden border border-[#27272A] bg-[#111113] lg:grid-cols-[0.9fr_1.1fr]">
+          {/* Left content */}
+          <div className="hidden border-r border-[#27272A] p-10 lg:flex lg:flex-col lg:justify-between xl:p-14">
+            <div>
+              <Link
+                href="/"
+                className="text-2xl font-semibold tracking-[-0.04em]"
+              >
+                Ride
+                <span className="text-[#D4AF5A]">Now</span>
+              </Link>
 
-      {/* Form */}
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white/5 backdrop-blur-xl p-8 rounded-xl w-full max-w-md border border-white/10"
-      >
-        <h2 className="text-2xl text-white font-bold mb-6 text-center">
-          Create an Account
-        </h2>
+              <div className="mt-24 max-w-sm">
+                <p className="text-xs font-medium uppercase tracking-[0.2em] text-[#D4AF5A]">
+                  Join RideNow
+                </p>
 
-        {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
+                <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-[-0.04em]">
+                  Make every journey worth taking.
+                </h1>
 
-        <input
-          type="text"
-          placeholder="First Name"
-          className="w-full mb-4 p-3 rounded bg-black/30 text-white outline-none"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          required
-        />
+                <p className="mt-5 text-sm leading-7 text-[#A1A1AA]">
+                  Create your account to reserve vehicles, manage bookings, and
+                  keep your journeys in one place.
+                </p>
+              </div>
+            </div>
 
-        <input
-          type="text"
-          placeholder="Last Name"
-          className="w-full mb-4 p-3 rounded bg-black/30 text-white outline-none"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          required
-        />
+            <p className="text-xs uppercase tracking-[0.16em] text-[#52525B]">
+              RIDENOW / 2026
+            </p>
+          </div>
 
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full mb-4 p-3 rounded bg-black/30 text-white outline-none"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+          {/* Form */}
+          <div className="p-7 sm:p-10 lg:p-14">
+            <div className="mx-auto max-w-md">
+              <div className="lg:hidden">
+                <Link
+                  href="/"
+                  className="text-2xl font-semibold tracking-[-0.04em]"
+                >
+                  Ride
+                  <span className="text-[#D4AF5A]">Now</span>
+                </Link>
+              </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full mb-6 p-3 rounded bg-black/30 text-white outline-none"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+              <div className="mt-10 lg:mt-0">
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#D4AF5A]">
+                  Account
+                </p>
 
-        <button
-          disabled={loading}
-          className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 py-3 rounded font-semibold text-white disabled:opacity-60"
-        >
-          {loading ? "Creating account..." : "Sign Up"}
-        </button>
+                <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em]">
+                  Create your account
+                </h2>
 
-        {/* Login link */}
-        <p className="text-slate-300 text-sm mt-6 text-center">
-          Already have an account?{" "}
-          <Link href="/login" className="text-cyan-400 hover:underline">
-            Login
-          </Link>
-        </p>
-      </form>
-    </section>
+                <p className="mt-3 text-sm leading-6 text-[#71717A]">
+                  Get started with RideNow in a few seconds.
+                </p>
+              </div>
+
+              {error && (
+                <div className="mt-7 border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-400">
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+                {/* Names */}
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label
+                      htmlFor="firstName"
+                      className="mb-2 block text-xs font-medium uppercase tracking-[0.12em] text-[#A1A1AA]"
+                    >
+                      First name
+                    </label>
+
+                    <div className="relative">
+                      <User className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#71717A]" />
+
+                      <input
+                        id="firstName"
+                        type="text"
+                        value={firstName}
+                        onChange={(event) => setFirstName(event.target.value)}
+                        placeholder="Abhishek"
+                        autoComplete="given-name"
+                        required
+                        className="h-12 w-full border border-[#27272A] bg-[#09090B] pl-11 pr-4 text-sm text-[#F4F4F5] outline-none transition-colors placeholder:text-[#52525B] focus:border-[#D4AF5A]/60"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="lastName"
+                      className="mb-2 block text-xs font-medium uppercase tracking-[0.12em] text-[#A1A1AA]"
+                    >
+                      Last name
+                    </label>
+
+                    <input
+                      id="lastName"
+                      type="text"
+                      value={lastName}
+                      onChange={(event) => setLastName(event.target.value)}
+                      placeholder="Ghosh"
+                      autoComplete="family-name"
+                      required
+                      className="h-12 w-full border border-[#27272A] bg-[#09090B] px-4 text-sm text-[#F4F4F5] outline-none transition-colors placeholder:text-[#52525B] focus:border-[#D4AF5A]/60"
+                    />
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="mb-2 block text-xs font-medium uppercase tracking-[0.12em] text-[#A1A1AA]"
+                  >
+                    Email address
+                  </label>
+
+                  <div className="relative">
+                    <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#71717A]" />
+
+                    <input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      placeholder="you@example.com"
+                      autoComplete="email"
+                      required
+                      className="h-12 w-full border border-[#27272A] bg-[#09090B] pl-11 pr-4 text-sm text-[#F4F4F5] outline-none transition-colors placeholder:text-[#52525B] focus:border-[#D4AF5A]/60"
+                    />
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="mb-2 block text-xs font-medium uppercase tracking-[0.12em] text-[#A1A1AA]"
+                  >
+                    Password
+                  </label>
+
+                  <div className="relative">
+                    <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#71717A]" />
+
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      placeholder="Create a password"
+                      autoComplete="new-password"
+                      minLength={6}
+                      required
+                      className="h-12 w-full border border-[#27272A] bg-[#09090B] pl-11 pr-12 text-sm text-[#F4F4F5] outline-none transition-colors placeholder:text-[#52525B] focus:border-[#D4AF5A]/60"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((current) => !current)}
+                      className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center text-[#71717A] transition-colors hover:text-[#F4F4F5]"
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+
+                  <p className="mt-2 text-xs text-[#52525B]">
+                    Use at least 6 characters.
+                  </p>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="group flex h-12 w-full items-center justify-center gap-2 bg-[#D4AF5A] text-sm font-semibold text-[#09090B] transition-all duration-200 hover:bg-[#E0BE70] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Creating account...
+                    </>
+                  ) : (
+                    <>
+                      Create account
+                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                    </>
+                  )}
+                </button>
+              </form>
+
+              <div className="mt-8 border-t border-[#27272A] pt-7 text-center">
+                <p className="text-sm text-[#71717A]">
+                  Already have an account?{" "}
+                  <Link
+                    href={`/login${
+                      redirectTo !== "/"
+                        ? `?redirect=${encodeURIComponent(redirectTo)}`
+                        : ""
+                    }`}
+                    className="font-medium text-[#D4AF5A] transition-colors hover:text-[#E0BE70]"
+                  >
+                    Sign in
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
   );
 };
 

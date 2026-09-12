@@ -1,9 +1,17 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
 
 const AuthContext = createContext(null);
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export const AuthProvider = ({ children }) => {
   const router = useRouter();
@@ -12,72 +20,136 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load auth from localStorage on refresh
+  // Restore authentication after refresh
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
+    try {
+      const storedToken = localStorage.getItem("token");
+      const storedUser = localStorage.getItem("user");
 
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (error) {
+      console.error("Failed to restore authentication:", error);
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }, []);
 
   // LOGIN
   const login = async (email, password) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+    const response = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email.trim().toLowerCase(),
+        password,
+      }),
     });
 
-    const data = await res.json();
+    const data = await response.json();
 
-    if (!res.ok) {
-      throw new Error(data.message || "Login failed");
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || "Unable to log in.");
     }
 
-    setUser(data.data.user);
-    setToken(data.data.token);
+    const userData = data.data.user;
+    const authToken = data.data.token;
 
-    localStorage.setItem("token", data.data.token);
-    localStorage.setItem("user", JSON.stringify(data.data.user));
+    setUser(userData);
+    setToken(authToken);
+
+    localStorage.setItem("token", authToken);
+    localStorage.setItem("user", JSON.stringify(userData));
+
+    return data;
   };
 
   // REGISTER
   const register = async (payload) => {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }
-    );
+    const response = await fetch(`${API_URL}/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        firstName: payload.firstName.trim(),
+        lastName: payload.lastName.trim(),
+        email: payload.email.trim().toLowerCase(),
+        password: payload.password,
+      }),
+    });
 
-    const data = await res.json();
+    const data = await response.json();
 
-    if (!res.ok) {
-      throw new Error(data.message || "Registration failed");
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || "Unable to create your account.");
     }
 
-    setUser(data.data.user);
-    setToken(data.data.token);
+    const userData = data.data.user;
+    const authToken = data.data.token;
 
-    localStorage.setItem("token", data.data.token);
-    localStorage.setItem("user", JSON.stringify(data.data.user));
+    setUser(userData);
+    setToken(authToken);
+
+    localStorage.setItem("token", authToken);
+    localStorage.setItem("user", JSON.stringify(userData));
+
+    return data;
+  };
+
+  // UPDATE
+
+  const updateUser = (updatedUser) => {
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
   };
 
   // LOGOUT
   const logout = () => {
     setUser(null);
     setToken(null);
+
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+
     router.push("/");
   };
+
+  /*
+   * Use this for every protected backend request.
+   *
+   * Example:
+   * authFetch("/bookings", {
+   *   method: "POST",
+   *   body: JSON.stringify(data)
+   * })
+   */
+  const authFetch = useCallback(
+    async (endpoint, options = {}) => {
+      const storedToken = token || localStorage.getItem("token");
+
+      const headers = new Headers(options.headers || {});
+
+      headers.set("Content-Type", "application/json");
+
+      if (storedToken) {
+        headers.set("Authorization", `Bearer ${storedToken}`);
+      }
+
+      return fetch(`${API_URL}${endpoint}`, {
+        ...options,
+        headers,
+      });
+    },
+    [token],
+  );
 
   return (
     <AuthContext.Provider
@@ -85,10 +157,12 @@ export const AuthProvider = ({ children }) => {
         user,
         token,
         loading,
-        isAuthenticated: !!user,
+        isAuthenticated: Boolean(user && token),
         login,
         register,
         logout,
+        authFetch,
+        updateUser,
       }}
     >
       {children}
@@ -96,5 +170,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Hook
 export const useAuth = () => useContext(AuthContext);

@@ -1,215 +1,383 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
-import { Menu, X, ArrowLeft, User } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
-import { usePathname } from "next/navigation";
 
-const Navbar = ({
-  showLinks = true,
-  showBookButton = false,
-  showBackButton = false,
-  showLoginSignupButton = true,
-}) => {
-  const router = useRouter();
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  CalendarDays,
+  LayoutDashboard,
+  LogOut,
+  MessageSquare,
+  UserRound,
+  X,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+
+const navItems = [
+  {
+    label: "Home",
+    href: "/",
+  },
+  {
+    label: "Cars",
+    href: "/cars",
+  },
+  {
+    label: "Pricing",
+    href: "/pricing",
+  },
+  {
+    label: "About",
+    href: "/about",
+  },
+  {
+    label: "Contact",
+    href: "/contact",
+  },
+];
+
+const accountItems = [
+  {
+    label: "Overview",
+    href: "/dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    label: "My bookings",
+    href: "/dashboard/bookings",
+    icon: CalendarDays,
+  },
+  {
+    label: "Profile",
+    href: "/dashboard/profile",
+    icon: UserRound,
+  },
+  {
+    label: "Reviews",
+    href: "/dashboard/reviews",
+    icon: MessageSquare,
+  },
+];
+
+const Navbar = () => {
   const pathname = usePathname();
 
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
-  const dropdownRef = useRef(null);
+  const accountRef = useRef(null);
 
-  const isHomePage = pathname === "/";
+  const isActive = (href) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
 
-  // Close dropdown on outside click
+    if (href === "/cars") {
+      return pathname === "/cars" || pathname.startsWith("/cars/");
+    }
+
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
+  const isAccountActive = (href) => {
+    if (href === "/dashboard") {
+      return pathname === "/dashboard";
+    }
+
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
+  const fullName =
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+    user?.name ||
+    "Account";
+
+  const initials = fullName
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  // Close account menu when clicking outside.
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setShowDropdown(false);
+    const handleClickOutside = (event) => {
+      if (accountRef.current && !accountRef.current.contains(event.target)) {
+        setAccountOpen(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
-  const navLinks = [
-    { label: "Home", href: "#home" },
-    { label: "Features", href: "#features" },
-    { label: "Cars Highlights", href: "#highlights" },
-    { label: "Pricing", href: "#pricing" },
-  ];
+  // Close account menu with Escape.
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setAccountOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
+  const handleLogoutClick = () => {
+    setAccountOpen(false);
+    setLogoutOpen(true);
+  };
+
+  const handleLogoutConfirm = () => {
+    setLogoutOpen(false);
+    logout();
+  };
 
   return (
     <>
-      <nav className="sticky top-0 z-50 w-full bg-slate-950/80 backdrop-blur-xl border-b border-cyan-500/20 shadow-lg shadow-cyan-500/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 sm:h-20">
-            {/* Logo */}
-            <div className="flex-shrink-0">
-              <Link href="/" className="flex items-center gap-2 group">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg blur-sm opacity-60 group-hover:opacity-100 transition-opacity"></div>
-                  <div className="relative px-3 py-1.5 bg-slate-950 rounded-lg">
-                    <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-                      RideNow
-                    </span>
-                  </div>
-                </div>
+      <header className="fixed left-0 right-0 top-0 z-[100] w-full border-b border-white/[0.08] bg-[#09090B]/95 backdrop-blur-md">
+        <nav className="mx-auto flex h-[76px] w-full max-w-[1440px] items-center justify-between px-6 sm:px-8 lg:px-10">
+          {/* Logo */}
+          <Link
+            href="/"
+            className="text-[25px] font-semibold tracking-[-0.04em] text-white"
+          >
+            Ride<span className="text-[#D4AF5A]">Now</span>
+          </Link>
+
+          {/* Main navigation */}
+          <div className="hidden items-center gap-7 md:flex">
+            {navItems.map((item) => {
+              const active = isActive(item.href);
+
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="group relative px-1 py-2"
+                >
+                  <span
+                    className={`text-[15px] font-medium transition-colors duration-200 ${
+                      active
+                        ? "text-white"
+                        : "text-zinc-400 hover:text-zinc-100"
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+
+                  {active && (
+                    <motion.span
+                      layoutId="navbar-active"
+                      className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full bg-[#D4AF5A]"
+                      transition={{
+                        type: "spring",
+                        stiffness: 380,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Account */}
+          <div className="relative" ref={accountRef}>
+            {loading ? (
+              <div className="h-11 w-11 rounded-full border border-white/[0.08] bg-white/[0.03]" />
+            ) : user ? (
+              <>
+                {/* User avatar */}
+                <button
+                  type="button"
+                  onClick={() => setAccountOpen((open) => !open)}
+                  aria-label="Open account menu"
+                  aria-expanded={accountOpen}
+                  className={`flex h-11 w-11 items-center justify-center rounded-full border text-xs font-semibold transition-all duration-200 ${
+                    accountOpen
+                      ? "border-[#D4AF5A] bg-[#D4AF5A]/15 text-[#D4AF5A]"
+                      : "border-[#D4AF5A]/30 bg-[#D4AF5A]/10 text-[#D4AF5A] hover:border-[#D4AF5A]/60 hover:bg-[#D4AF5A]/15"
+                  }`}
+                >
+                  {initials}
+                </button>
+
+                {/* Account menu */}
+                <AnimatePresence>
+                  {accountOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                      transition={{ duration: 0.18 }}
+                      className="absolute right-0 top-[calc(100%+12px)] w-[280px] overflow-hidden border border-white/[0.1] bg-[#111113] shadow-2xl shadow-black/30"
+                    >
+                      {/* Heading */}
+                      <div className="border-b border-white/[0.08] px-5 py-4">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600">
+                          Account
+                        </p>
+                      </div>
+
+                      {/* Account navigation */}
+                      <div className="p-2">
+                        {accountItems.map((item) => {
+                          const Icon = item.icon;
+                          const active = isAccountActive(item.href);
+
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              onClick={() => setAccountOpen(false)}
+                              className={`group flex h-11 items-center gap-3 px-3 text-sm transition-colors ${
+                                active
+                                  ? "bg-white/[0.06] text-white"
+                                  : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100"
+                              }`}
+                            >
+                              <Icon
+                                className={`h-[17px] w-[17px] ${
+                                  active
+                                    ? "text-[#D4AF5A]"
+                                    : "text-zinc-600 group-hover:text-zinc-400"
+                                }`}
+                                strokeWidth={1.8}
+                              />
+
+                              <span className="flex-1">{item.label}</span>
+
+                              {active && (
+                                <span className="h-1.5 w-1.5 rounded-full bg-[#D4AF5A]" />
+                              )}
+                            </Link>
+                          );
+                        })}
+                      </div>
+
+                      {/* User information */}
+                      <div className="border-t border-white/[0.08] px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#D4AF5A]/30 bg-[#D4AF5A]/10 text-[11px] font-semibold text-[#D4AF5A]">
+                            {initials}
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-zinc-200">
+                              {fullName}
+                            </p>
+
+                            <p className="mt-0.5 truncate text-xs text-zinc-600">
+                              {user.email}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Sign out */}
+                      <div className="border-t border-white/[0.08] p-2">
+                        <button
+                          type="button"
+                          onClick={handleLogoutClick}
+                          className="flex h-11 w-full items-center gap-3 px-3 text-sm text-zinc-500 transition-colors hover:bg-white/[0.04] hover:text-zinc-200"
+                        >
+                          <LogOut
+                            className="h-[17px] w-[17px]"
+                            strokeWidth={1.8}
+                          />
+                          Sign out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="inline-flex h-11 items-center justify-center rounded-xl bg-[#D4AF5A] px-5 text-sm font-semibold text-[#09090B] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#E0BE70]"
+              >
+                Login / Signup
               </Link>
-            </div>
-
-            {/* Desktop Navigation Links */}
-            {showLinks && (
-              <div className="hidden md:flex items-center gap-1">
-                {navLinks.map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    className="px-4 py-2 text-sm font-medium text-slate-200 hover:text-cyan-400 transition-all duration-300 relative group"
-                  >
-                    {link.label}
-                    <span className="absolute bottom-0 left-4 w-0 h-1 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-full group-hover:w-[calc(100%-32px)] transition-all duration-300"></span>
-                  </a>
-                ))}
-              </div>
-            )}
-
-            {/* Right Action */}
-            <div className="hidden md:flex items-center gap-4">
-              {showBookButton && (
-                <Link href="/booking">
-                  <button className="px-6 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-cyan-500 to-purple-500">
-                    Book Now
-                  </button>
-                </Link>
-              )}
-
-              {showBackButton && (
-                <button
-                  onClick={() => router.back()}
-                  className="flex justify-center items-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-cyan-500 to-purple-500"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                  Back
-                </button>
-              )}
-
-              {showLoginSignupButton && isHomePage && (
-                <Link href={isAuthenticated ? "/booking" : "/login"}>
-                  <button className="flex justify-center items-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-cyan-500 to-purple-500">
-                    {isAuthenticated ? "Book Now" : "Login / Signup"}
-                  </button>
-                </Link>
-              )}
-
-              {/* User Avatar */}
-              {isAuthenticated && (
-                <div className="relative" ref={dropdownRef}>
-                  <button
-                    onClick={() => setShowDropdown(!showDropdown)}
-                    className="w-10 h-10 rounded-full bg-cyan-500 flex items-center justify-center text-white"
-                  >
-                    <User size={20} />
-                  </button>
-
-                  {/* Dropdown */}
-                  {showDropdown && (
-                    <div className="absolute right-0 mt-2 w-40 bg-slate-900 border border-slate-700 rounded-lg shadow-lg">
-                      <h1 className="text-slate-300 p-4 border-b-[0.5px] border-slate-500">
-                        Hii, {user.firstName}
-                      </h1>
-                      <button
-                        onClick={() => {
-                          setShowDropdown(false);
-                          setShowLogoutModal(true);
-                        }}
-                        className="w-full px-4 py-3 text-left text-white hover:bg-slate-800 rounded-b-lg rounded-bl-lg"
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Mobile Menu Button */}
-            {showLinks && (
-              <div className="md:hidden">
-                <button
-                  onClick={() => setIsOpen(!isOpen)}
-                  className="inline-flex items-center justify-center p-2 rounded-lg text-cyan-400 hover:bg-slate-800/50 transition-all"
-                  aria-expanded="false"
-                >
-                  <span className="sr-only">Open main menu</span>
-                  {isOpen ? (
-                    <X className="block h-6 w-6" />
-                  ) : (
-                    <Menu className="block h-6 w-6" />
-                  )}
-                </button>
-              </div>
             )}
           </div>
-        </div>
+        </nav>
+      </header>
 
-        {/* Mobile Menu */}
-        {isOpen && (
-          <div className="md:hidden bg-slate-900/95 backdrop-blur-xl border-t border-cyan-500/20 shadow-lg shadow-cyan-500/5">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="block px-4 py-3 rounded-lg text-base font-medium text-slate-200 hover:bg-slate-800/60 hover:text-cyan-400 transition-all duration-300"
-                  onClick={() => setIsOpen(false)}
+      {/* Sign-out confirmation */}
+      <AnimatePresence>
+        {logoutOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 px-6 backdrop-blur-sm"
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) {
+                setLogoutOpen(false);
+              }
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 12, scale: 0.98 }}
+              transition={{ duration: 0.2 }}
+              className="relative w-full max-w-[420px] border border-white/[0.1] bg-[#111113] p-6 shadow-2xl shadow-black/40"
+            >
+              {/* Close */}
+              <button
+                type="button"
+                onClick={() => setLogoutOpen(false)}
+                aria-label="Close"
+                className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center text-zinc-600 transition-colors hover:text-zinc-300"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              <div className="flex h-11 w-11 items-center justify-center border border-[#D4AF5A]/20 bg-[#D4AF5A]/[0.06]">
+                <LogOut className="h-5 w-5 text-[#D4AF5A]" strokeWidth={1.7} />
+              </div>
+
+              <h2 className="mt-6 text-xl font-semibold tracking-[-0.025em] text-white">
+                Sign out?
+              </h2>
+
+              <p className="mt-2 max-w-[340px] text-sm leading-6 text-zinc-500">
+                Are you sure you want to sign out of your RideNow account?
+              </p>
+
+              <div className="mt-7 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setLogoutOpen(false)}
+                  className="h-11 px-5 text-sm font-medium text-zinc-400 transition-colors hover:text-white"
                 >
-                  {link.label}
-                </a>
-              ))}
-              <div className="pt-4 pb-2 border-t border-cyan-500/20">
-                <button className="w-full px-4 py-3 rounded-lg font-semibold text-white bg-gradient-to-r from-cyan-500 to-purple-500 hover:shadow-lg hover:shadow-cyan-500/30 transition-all duration-300">
-                  Book Now
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleLogoutConfirm}
+                  className="h-11 bg-[#D4AF5A] px-5 text-sm font-semibold text-[#09090B] transition-colors hover:bg-[#E0BE70]"
+                >
+                  Sign out
                 </button>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
-      </nav>
-
-      {/* Logout Confirmation Modal */}
-      {showLogoutModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-slate-900 rounded-xl p-6 w-full max-w-sm">
-            <h2 className="text-white text-lg font-semibold mb-4">
-              Do you really want to logout?
-            </h2>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowLogoutModal(false)}
-                className="px-4 py-2 rounded-lg bg-gray-600 text-white"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={() => {
-                  setShowLogoutModal(false);
-                  logout();
-                }}
-                className="px-4 py-2 rounded-lg bg-cyan-500 text-white"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      </AnimatePresence>
     </>
   );
 };

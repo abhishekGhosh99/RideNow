@@ -1,54 +1,95 @@
+const { calculateRentalDays } = require("./dateHelpers");
+
 exports.calculatePrice = ({
   car,
   startDate,
   endDate,
   plan,
-  extras,
+  extras = [],
   promoCode,
 }) => {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+  if (!car?.pricing?.perDay) {
+    throw new Error("Car pricing information is missing");
+  }
 
-  // Base price
-  let basePrice = car.pricing.perDay * days;
+  const days = calculateRentalDays(startDate, endDate);
 
-  // Apply plan discount
+  const basePrice = car.pricing.perDay * days;
+
+  // Plan discount
   let planDiscount = 0;
-  if (plan) {
-    const discountPercentage = car.pricing.discounts[plan.name] || 0;
-    planDiscount = (basePrice * discountPercentage) / 100;
+
+  if (plan?.name) {
+    const discountPercentage =
+      car.pricing.discounts?.[plan.name] || 0;
+
+    planDiscount =
+      (basePrice * discountPercentage) / 100;
   }
 
-  // Calculate extras
-  let extraCharges = 0;
-  if (extras && extras.length > 0) {
-    extraCharges = extras.reduce((sum, extra) => sum + extra.price * days, 0);
-  }
+  // Extras
+  const extraCharges = extras.reduce((sum, extra) => {
+    const price = Number(extra.price) || 0;
 
-  // Apply promo code (simplified - you'd check DB for real promo)
+    return sum + price * days;
+  }, 0);
+
+  // Promo code
   let promoDiscount = 0;
+
   if (promoCode === "FIRST20") {
     promoDiscount = basePrice * 0.2;
   }
 
-  // Insurance (10% of base)
+  // Insurance
   const insurance = basePrice * 0.1;
 
-  // Taxes (8% of subtotal)
+  const discountedBasePrice = Math.max(
+    0,
+    basePrice - planDiscount - promoDiscount
+  );
+
   const subtotal =
-    basePrice - planDiscount - promoDiscount + extraCharges + insurance;
+    discountedBasePrice +
+    extraCharges +
+    insurance;
+
+  // Temporary tax rate
   const taxes = subtotal * 0.08;
 
   const totalAmount = subtotal + taxes;
 
   return {
-    basePrice: parseFloat(basePrice.toFixed(2)),
-    planDiscount: parseFloat(planDiscount.toFixed(2)),
-    promoDiscount: parseFloat(promoDiscount.toFixed(2)),
-    insurance: parseFloat(insurance.toFixed(2)),
-    extraCharges: parseFloat(extraCharges.toFixed(2)),
-    taxes: parseFloat(taxes.toFixed(2)),
-    totalAmount: parseFloat(totalAmount.toFixed(2)),
+    days,
+
+    basePrice: Number(basePrice.toFixed(2)),
+
+    planDiscount: Number(
+      planDiscount.toFixed(2)
+    ),
+
+    promoDiscount: Number(
+      promoDiscount.toFixed(2)
+    ),
+
+    insurance: Number(
+      insurance.toFixed(2)
+    ),
+
+    extraCharges: Number(
+      extraCharges.toFixed(2)
+    ),
+
+    subtotal: Number(
+      subtotal.toFixed(2)
+    ),
+
+    taxes: Number(
+      taxes.toFixed(2)
+    ),
+
+    totalAmount: Number(
+      totalAmount.toFixed(2)
+    ),
   };
 };

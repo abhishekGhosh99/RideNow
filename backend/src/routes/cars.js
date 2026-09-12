@@ -3,17 +3,19 @@ const router = express.Router();
 const { protect, authorize } = require("../middleware/auth");
 const {
   getCars,
+  searchAvailableCars,
   getCar,
   createCar,
   updateCar,
   deleteCar,
-  checkAvailability,
+  // checkAvailability,
 } = require("../controllers/carController");
 
 // Public routes
 router.get("/", getCars);
+router.get("/search", searchAvailableCars);
 router.get("/:id", getCar);
-router.post("/:id/check-availability", checkAvailability);
+// router.post("/:id/check-availability", checkAvailability);
 
 // Protected routes (Admin only)
 router.post("/", protect, authorize("admin"), createCar);

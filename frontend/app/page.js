@@ -1,19 +1,36 @@
-import Features from "@/components/Features";
-import Footer from "@/components/Footer";
 import Hero from "@/components/Hero";
-import Highlights from "@/components/Highlights";
-import Navbar from "@/components/Navbar";
-import Pricing from "@/components/Pricing";
+import CarSearch from "@/components/CarSearch";
+import FeaturedFleet from "@/components/FeaturedFleet";
+import WhyRideNow from "@/components/WhyRideNow";
+import HowItWorks from "@/components/HowItWorks";
+import TrustStats from "@/components/TrustStats";
+import FinalCTA from "@/components/FinalCTA";
 
-export default function Home() {
+const Home = () => {
   return (
-    <main className="">
-      <Navbar />
+    <main className="bg-[#09090B] text-[#F4F4F5]">
+      {/* Hero */}
       <Hero />
-      <Features />
-      <Highlights />
-      <Pricing />
-      <Footer />
+
+      {/* Vehicle Search */}
+      <CarSearch />
+
+      {/* Why RideNow */}
+      <WhyRideNow />
+
+      {/* How It Works */}
+      <HowItWorks />
+
+      {/* Featured Fleet */}
+      <FeaturedFleet />
+
+      {/* Trust / Stats */}
+      <TrustStats />
+
+      {/* Final CTA */}
+      <FinalCTA />
     </main>
   );
-}
+};
+
+export default Home;
