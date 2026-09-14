@@ -23,7 +23,9 @@ import {
 
 import { useAuth } from "@/context/AuthContext";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === "development" ? "http://localhost:5000/api" : "/api");
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */

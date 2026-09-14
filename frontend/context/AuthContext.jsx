@@ -11,7 +11,9 @@ import { useRouter } from "next/navigation";
 
 const AuthContext = createContext(null);
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (process.env.NODE_ENV === "development" ? "http://localhost:5000/api" : "/api");
 
 export const AuthProvider = ({ children }) => {
   const router = useRouter();
