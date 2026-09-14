@@ -5,7 +5,7 @@ import { Loader2, Search, SlidersHorizontal, X } from "lucide-react";
 import { motion } from "framer-motion";
 import CarCard from "@/components/cars/CarCard";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 const CarsPage = () => {
   const [cars, setCars] = useState([]);

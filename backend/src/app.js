@@ -19,15 +19,29 @@ app.use(compression());
 // CORS (whitelist)
 const allowedOrigins = [
   process.env.FRONTEND_URL,
+  process.env.NEXT_PUBLIC_FRONTEND_URL,
+  process.env.VERCEL_PROJECT_PRODUCTION_URL,
   "http://localhost:3000",
+  "http://localhost:3001",
 ].filter(Boolean);
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+
+  if (allowedOrigins.includes(origin)) return true;
+
+  return /\.vercel\.app$/i.test(origin) || /\.vercel\.app:\d+$/i.test(origin);
+};
+
 app.use(
   cors({
     origin: (origin, cb) => {
-      if (!origin || allowedOrigins.includes(origin)) cb(null, true);
-      else cb(new Error("Not allowed by CORS"));
+      if (isAllowedOrigin(origin)) return cb(null, true);
+      cb(new Error("Not allowed by CORS"));
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   })
 );
 
